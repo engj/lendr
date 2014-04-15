@@ -24,14 +24,19 @@ function Person(name) {
 		// Are all of the previous amounts greater than amount? If they are, pick any one of them and split.
 		allPreviousAmountsGreater = this.allPreviousAmountsGreater(amount);
 		if (allPreviousAmountsGreater) {
-			console.log("All previous amounts are greater than amount!");
+			console.log("All previous amounts are greater than amount, so pick any one of the previouses and split it");
 			return;
 		}
 		
 		// Is there a combination of previous amounts that add up to less than or equal to the amount? If it is less than, it should be the greatest less than combination.
 		perfectPreviousCombination = this.perfectPreviousCombination(amount);
 		if (perfectPreviousCombination != null) {
-			console.log("Perfect previous combination found! - " + perfectPreviousCombination.toString());
+			console.log("previouses that don't need to be split: " + perfectPreviousCombination[0].toString());
+			if (perfectPreviousCombination[1].length == 0) {
+				console.log("previouses that do need to be split: none, this person will need to pay the remainder");
+			} else {
+				console.log("previouses that do need to be split: " + perfectPreviousCombination[1].toString());
+			}
 			return;
 		}
 	};
@@ -92,7 +97,16 @@ function Person(name) {
 			}
 		}
 		// At this point, we will need to split some previouses. I believe we only need the first previous not in currentBestMaxSubset to split.
-		return currentBestMaxSubset;
+		previousToSplit = [];
+		for (var i = 0; i < this.previouses.length; i++) {
+			for (var j = 0; j < currentBestMaxSubset.length; j++) {
+				if ((this.previouses[i][0].name != currentBestMaxSubset[j][0].name) && (this.previouses[i][1] != currentBestMaxSubset[j][1])) {
+					previousToSplit.push(this.previouses[i]);
+					return [currentBestMaxSubset, previousToSplit];
+				}
+			}
+		}
+		return [currentBestMaxSubset, previousToSplit];
 	};
 	
 	this.perfectPreviousCombinationSum = function(previouses) {
@@ -145,11 +159,13 @@ printPeople(people);
 bob.addNext(jordan, 5);
 */
 
-jennifer.addNext(bob, 200);
+jennifer.addNext(bob, 6);
+/*
 tom.addNext(bob, 1);
 diane.addNext(bob, 1);
+*/
 
-bob.addNext(jordan, 20);
+bob.addNext(jordan, 5);
 printPeople(people);
 
 //printPeople(people);
