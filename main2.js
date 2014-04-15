@@ -30,14 +30,13 @@ function Person(name) {
 		
 		// Is there a combination of previous amounts that add up to less than or equal to the amount? If it is less than, it should be the greatest less than combination.
 		perfectPreviousCombination = this.perfectPreviousCombination(amount);
-		if (perfectPreviousCombination != null) {
+		if (perfectPreviousCombination[1].length == 0) {
 			console.log("previouses that don't need to be split: " + perfectPreviousCombination[0].toString());
-			if (perfectPreviousCombination[1].length == 0) {
-				console.log("previouses that do need to be split: none, this person will need to pay the remainder");
-			} else {
-				console.log("previouses that do need to be split: " + perfectPreviousCombination[1].toString());
-			}
-			return;
+			console.log("previouses that do need to be split: none!");
+		} else {
+			console.log("previouses that don't need to be split: " + perfectPreviousCombination[0].toString());
+			console.log("previouses that do need to be split: " + perfectPreviousCombination[1].toString());
+			
 		}
 	};
 	
@@ -88,7 +87,7 @@ function Person(name) {
 				var s2Sum = this.perfectPreviousCombinationSum(s2);
 				if (s2Sum == amount) {
 					// Perfect, no split necessary
-					return s2;
+					return [s2,[]];
 				} else if ((s2Sum > currentBestMaxSubsetSum) && (s2Sum < amount)) {
 					currentBestMaxSubset = s2;
 					currentBestMaxSubsetSum = s2Sum;
@@ -100,13 +99,13 @@ function Person(name) {
 		previousToSplit = [];
 		for (var i = 0; i < this.previouses.length; i++) {
 			for (var j = 0; j < currentBestMaxSubset.length; j++) {
-				if ((this.previouses[i][0].name != currentBestMaxSubset[j][0].name) && (this.previouses[i][1] != currentBestMaxSubset[j][1])) {
+				if ((this.previouses[i][1] > amount) && (this.previouses[i][0].name != currentBestMaxSubset[j][0].name) && (this.previouses[i][1] != currentBestMaxSubset[j][1])) {
 					previousToSplit.push(this.previouses[i]);
 					return [currentBestMaxSubset, previousToSplit];
 				}
 			}
 		}
-		return [currentBestMaxSubset, previousToSplit];
+		return [currentBestMaxSubset, false];
 	};
 	
 	this.perfectPreviousCombinationSum = function(previouses) {
@@ -147,7 +146,8 @@ var jennifer = new Person("Jennifer");
 var tom = new Person("Tom");
 var diane = new Person("Diane");
 var jordan = new Person("Jordan");
-var people = [bob, jennifer, tom, diane, jordan];
+var kevin = new Person("Kevin");
+var people = [bob, jennifer, tom, diane, jordan, kevin];
 
 /*
 jennifer.addNext(bob, 1);
@@ -159,11 +159,9 @@ printPeople(people);
 bob.addNext(jordan, 5);
 */
 
-jennifer.addNext(bob, 6);
-/*
-tom.addNext(bob, 1);
+jennifer.addNext(bob, 1);
+tom.addNext(bob, 2);
 diane.addNext(bob, 1);
-*/
 
 bob.addNext(jordan, 5);
 printPeople(people);
