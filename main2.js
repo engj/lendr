@@ -6,6 +6,13 @@ function Person(name) {
 	this.previouses = [];
 	
 	this.addNext = function(person, amount) {
+		// Is there already a next between this and person?
+		if (this.alreadyANext(person) && (this.previouses.length == 0)) {
+			console.log("There are no previouses and there is a next to this person that already exists!");
+			this.addToExistingAmount(person, amount);
+			return;
+		}
+		
 		// Are there any previouses?
 		if (this.previouses.length == 0) {
 			console.log("No previouses are there!");
@@ -18,13 +25,19 @@ function Person(name) {
 		perfectPrevious = this.perfectPrevious(amount);
 		if (perfectPrevious != null) {
 			console.log("Perfect previous found! - " + perfectPrevious[0].name);
+			perfectPrevious[0].removeNext(this);
+			this.removePrevious(perfectPrevious[0]);
+			
+			perfectPrevious[0].nexts.push([person, amount]);
+			person.previouses.push([perfectPrevious[0], amount]);
 			return;
 		}
 		
 		// Are all of the previous amounts greater than amount? If they are, pick any one of them and split.
 		allPreviousAmountsGreater = this.allPreviousAmountsGreater(amount);
-		if (allPreviousAmountsGreater) {
+		if (allPreviousAmountsGreater != false) {
 			console.log("All previous amounts are greater than amount, so pick any one of the previouses and split it - " + allPreviousAmountsGreater[0].name);
+			
 			return;
 		}
 		
@@ -33,7 +46,6 @@ function Person(name) {
 		console.log("previouses that don't need to be split: " + perfectPreviousCombination[0].toString());
 		if (perfectPreviousCombination[1].length == 0) {
 			console.log("previouses that do need to be split: none!");
-			return;
 		} else if (perfectPreviousCombination[1] == false) {
 			console.log("previouses that do need to be split: the person requesting the next will need to be split");
 		} else {
@@ -41,8 +53,50 @@ function Person(name) {
 		}
 	};
 	
+	this.removePrevious = function(person) {
+		for (var i = 0; i < this.previouses.length; i++) {
+			if (this.previouses[i][0].name == person.name) {
+				this.previouses.splice(i, 1);
+				return;
+			}
+		}
+	};
+	
+	this.removeNext = function(person) {
+		for (var i = 0; i < this.nexts.length; i++) {
+			if (this.nexts[i][0].name == person.name) {
+				this.nexts.splice(i, 1);
+				return;
+			}
+		}
+	};
+	
 	this.equals = function(person) {
 		return (this.name == person.name);
+	};
+	
+	this.alreadyANext = function(person) {
+		for (var i = 0; i < this.nexts.length; i++) {
+			if (this.nexts[i][0].name == person.name) {
+				return true;
+			}
+		}
+		return false;
+	};
+	
+	this.addToExistingAmount = function(person, amount) {
+		for (var i = 0; i < this.nexts.length; i++) {
+			if (this.nexts[i][0].name == person.name) {
+				this.nexts[i][1] += amount;
+				break;
+			}
+		}
+		for (var i = 0; i < person.previouses.length; i++) {
+			if (person.previouses[i][0].name == this.name) {
+				person.previouses[i][1] += amount;
+				break;
+			}
+		}
 	};
 	
 	this.perfectPrevious = function(amount) {
@@ -169,8 +223,8 @@ bob.addNext(jordan, 5);
 */
 
 jennifer.addNext(bob, 6);
-tom.addNext(bob, 1);
-diane.addNext(bob, 1);
+tom.addNext(bob, 8);
+diane.addNext(bob, 7);
 
 bob.addNext(jordan, 5);
 printPeople(people);
