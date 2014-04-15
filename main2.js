@@ -33,10 +33,15 @@ function Person(name) {
 		if (perfectPreviousCombination[1].length == 0) {
 			console.log("previouses that don't need to be split: " + perfectPreviousCombination[0].toString());
 			console.log("previouses that do need to be split: none!");
+			return;
 		} else {
 			console.log("previouses that don't need to be split: " + perfectPreviousCombination[0].toString());
-			console.log("previouses that do need to be split: " + perfectPreviousCombination[1].toString());
-			
+			if (perfectPreviousCombination[1] == false) {
+				console.log("previouses that do need to be split: the person requesting the next will need to be split");
+			} else {
+				console.log("previouses that do need to be split: " + perfectPreviousCombination[1].toString());
+			}
+			return;
 		}
 	};
 	
@@ -98,11 +103,15 @@ function Person(name) {
 		// At this point, we will need to split some previouses. I believe we only need the first previous not in currentBestMaxSubset to split.
 		previousToSplit = [];
 		for (var i = 0; i < this.previouses.length; i++) {
-			for (var j = 0; j < currentBestMaxSubset.length; j++) {
-				if ((this.previouses[i][1] > amount) && (this.previouses[i][0].name != currentBestMaxSubset[j][0].name) && (this.previouses[i][1] != currentBestMaxSubset[j][1])) {
-					previousToSplit.push(this.previouses[i]);
-					return [currentBestMaxSubset, previousToSplit];
+			var j;
+			for (j = 0; j < currentBestMaxSubset.length; j++) {
+				if (this.previouses[i][0].name == currentBestMaxSubset[j][0].name) {
+					break;
 				}
+			}
+			if (j == currentBestMaxSubset.length) {
+				previousToSplit.push(this.previouses[i]);
+				return [currentBestMaxSubset, previousToSplit];
 			}
 		}
 		return [currentBestMaxSubset, false];
