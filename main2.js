@@ -24,24 +24,20 @@ function Person(name) {
 		// Are all of the previous amounts greater than amount? If they are, pick any one of them and split.
 		allPreviousAmountsGreater = this.allPreviousAmountsGreater(amount);
 		if (allPreviousAmountsGreater) {
-			console.log("All previous amounts are greater than amount, so pick any one of the previouses and split it");
+			console.log("All previous amounts are greater than amount, so pick any one of the previouses and split it - " + allPreviousAmountsGreater[0].name);
 			return;
 		}
 		
 		// Is there a combination of previous amounts that add up to less than or equal to the amount? If it is less than, it should be the greatest less than combination.
 		perfectPreviousCombination = this.perfectPreviousCombination(amount);
+		console.log("previouses that don't need to be split: " + perfectPreviousCombination[0].toString());
 		if (perfectPreviousCombination[1].length == 0) {
-			console.log("previouses that don't need to be split: " + perfectPreviousCombination[0].toString());
 			console.log("previouses that do need to be split: none!");
 			return;
+		} else if (perfectPreviousCombination[1] == false) {
+			console.log("previouses that do need to be split: the person requesting the next will need to be split");
 		} else {
-			console.log("previouses that don't need to be split: " + perfectPreviousCombination[0].toString());
-			if (perfectPreviousCombination[1] == false) {
-				console.log("previouses that do need to be split: the person requesting the next will need to be split");
-			} else {
-				console.log("previouses that do need to be split: " + perfectPreviousCombination[1].toString());
-			}
-			return;
+			console.log("previouses that do need to be split: " + perfectPreviousCombination[1].toString());
 		}
 	};
 	
@@ -60,12 +56,16 @@ function Person(name) {
 	};
 	
 	this.allPreviousAmountsGreater = function(amount) {
-		for (var i = 0; i < this.previouses.length; i++) {
+		var i;
+		for (i = 0; i < this.previouses.length; i++) {
 			if (this.previouses[i][1] < amount) {
-				return false;
+				break;
 			}
 		}
-		return true;
+		if (i == this.previouses.length) {
+			return this.previouses[0];
+		}
+		return false;
 	};
 	
 	//  Assumes there is at least one previous and that none of them are exactly equal to amount
@@ -168,8 +168,8 @@ printPeople(people);
 bob.addNext(jordan, 5);
 */
 
-jennifer.addNext(bob, 1);
-tom.addNext(bob, 2);
+jennifer.addNext(bob, 6);
+tom.addNext(bob, 1);
 diane.addNext(bob, 1);
 
 bob.addNext(jordan, 5);
