@@ -6,6 +6,11 @@ function Person(name) {
 	this.previouses = [];
 	
 	this.addNext = function(person, amount) {
+		// Is the amount 0?
+		if (amount == 0) {
+			return;
+		}
+		
 		// Is there already a next between this and person?
 		if (this.alreadyANext(person) && (this.previouses.length == 0)) {
 			console.log("There are no previouses and there is a next to this person that already exists!");
@@ -37,19 +42,49 @@ function Person(name) {
 		allPreviousAmountsGreater = this.allPreviousAmountsGreater(amount);
 		if (allPreviousAmountsGreater != false) {
 			console.log("All previous amounts are greater than amount, so pick any one of the previouses and split it - " + allPreviousAmountsGreater[0].name);
+			var difference = allPreviousAmountsGreater[1] - amount;
+			allPreviousAmountsGreater[0].modifyNextAmount(this, difference);
+			this.modifyPreviousAmount(allPreviousAmountsGreater[0], difference);
 			
+			allPreviousAmountsGreater[0].nexts.push([person, amount]);
+			person.previouses.push([allPreviousAmountsGreater[0], amount]);
 			return;
 		}
 		
 		// Is there a combination of previous amounts that add up to less than or equal to the amount? If it is less than, it should be the greatest less than combination.
 		perfectPreviousCombination = this.perfectPreviousCombination(amount);
 		console.log("previouses that don't need to be split: " + perfectPreviousCombination[0].toString());
+		for (var i = 0; i < perfectPreviousCombination[0].length; i++) {
+			var previousPerson = perfectPreviousCombination[0][i][0];
+			for (var j = 0; j < previousPerson.nexts.length; j++) {
+				if (previousPerson.nexts[j][0].name == this.name) {
+					previousPerson.nexts[j][0] = person;
+					person.previouses.push([previousPerson, previousPerson.nexts[j][1]]);
+					this.removePrevious(previousPerson);
+					break;
+				}
+			}
+		}
 		if (perfectPreviousCombination[1].length == 0) {
 			console.log("previouses that do need to be split: none!");
 		} else if (perfectPreviousCombination[1] == false) {
 			console.log("previouses that do need to be split: the person requesting the next will need to be split");
+			var perfectPreviousCombinationSum = this.perfectPreviousCombinationSum(perfectPreviousCombination[0]);
+			var difference = amount - perfectPreviousCombinationSum;
+			this.nexts.push([person, difference]);
+			person.previouses.push([this, difference]);
 		} else {
-			console.log("previouses that do need to be split: " + perfectPreviousCombination[1].toString());
+			console.log("previous that do need to be split: " + perfectPreviousCombination[1].toString());
+			var perfectPreviousCombinationPerson = perfectPreviousCombination[1][0];
+			var perfectPreviousCombinationSum = this.perfectPreviousCombinationSum(perfectPreviousCombination[0]);
+			var amountLeftNeeded = amount - perfectPreviousCombinationSum;
+			var difference = perfectPreviousCombinationPerson[1] - amountLeftNeeded;
+			
+			perfectPreviousCombinationPerson[0].modifyNextAmount(this, difference);
+			this.modifyPreviousAmount(perfectPreviousCombinationPerson[0], difference);
+			
+			perfectPreviousCombinationPerson[0].nexts.push([person, amountLeftNeeded]);
+			person.previouses.push([perfectPreviousCombinationPerson[0], amountLeftNeeded]);
 		}
 	};
 	
@@ -120,6 +155,24 @@ function Person(name) {
 			return this.previouses[0];
 		}
 		return false;
+	};
+	
+	this.modifyNextAmount = function(person, amount) {
+		for (var i = 0; i < this.nexts.length; i++) {
+			if (this.nexts[i][0].name == person.name) {
+				this.nexts[i][1] = amount;
+				break;
+			}
+		}
+	};
+	
+	this.modifyPreviousAmount = function(person, amount) {
+		for (var i = 0; i < this.previouses.length; i++) {
+			if (this.previouses[i][0].name == person.name) {
+				this.previouses[i][1] = amount;
+				break;
+			}
+		}
 	};
 	
 	//  Assumes there is at least one previous and that none of them are exactly equal to amount
@@ -222,11 +275,12 @@ printPeople(people);
 bob.addNext(jordan, 5);
 */
 
-jennifer.addNext(bob, 6);
-tom.addNext(bob, 8);
-diane.addNext(bob, 7);
+jennifer.addNext(bob, 1);
+tom.addNext(bob, 1);
+diane.addNext(bob, 1);
 
-bob.addNext(jordan, 5);
+bob.addNext(jordan, 10);
+
 printPeople(people);
 
 //printPeople(people);
