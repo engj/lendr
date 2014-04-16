@@ -46,14 +46,62 @@ Tree.prototype.removeConnection = function(debtor, creditor) {
 	}
 };
 
+// For any person
 Tree.prototype.simplifyPerson = function(person) {
 	// Can't simplify person if person does not have any prevs or nexts
-	if ((!person.hasPrevs()) || (!person.hasNexts())) {
-		console.log("Can't simplify!")
+	if (!this.canSimplifyPerson(person)) {
+		console.log("Can't simplify!");
 		return;
 	}
+
+	// At this point, there is at least debtor and one creditor
 	console.log("Can simplify something!");
-}
+	
+	// Simplify all exacts
+	this.simplifyExacts(person);
+	
+	if (!this.canSimplifyPerson(person)) {
+		console.log("Can't simplify anymore!!");
+		return;
+	}
+	
+	// At this point, the person can still be simplified
+	console.log("Can still simplify!");
+	
+	//
+	
+};
+
+Tree.prototype.canSimplifyPerson = function(person) {
+	if ((!person.hasPrevs()) || (!person.hasNexts())) {
+		return false;
+	}
+	return true;
+};
+
+// Simplify each person until no one has both debtors and creditors
+Tree.prototype.simplifyTree = function() {	
+};
+
+// Simplify exact debts
+Tree.prototype.simplifyExacts = function(person) {
+	var nexts = person.nexts;
+	for (var i = 0; i < nexts.length; i++) {
+		var next = nexts[i];
+		var creditor = next[0];
+		var amount = next[1];
+		
+		var exactDebtor = person.prevAmountPerson(amount);
+		
+		if (exactDebtor != null) {
+			console.log("Exact debtor found!");
+			this.removeConnection(exactDebtor, person);
+			this.removeConnection(person, creditor);
+			this.addConnection(exactDebtor, creditor, amount);
+			i -= 1;
+		}
+	}
+};
 
 Tree.prototype.listConnections = function() {
 	var persons = this.persons;
@@ -131,6 +179,20 @@ Person.prototype.hasNexts = function() {
 	return (nexts.length != 0)
 };
 
+// If there is a debtor who owes you exactly equal to amount, return that debtor. Otherwise, return null.
+Person.prototype.prevAmountPerson = function(amount) {
+	var prevs = this.prevs;
+	for (var i = 0; i < prevs.length; i++) {
+		var prev = prevs[i];
+		var debtor = prev[0];
+		var debtorAmount = prev[1];
+		if (debtorAmount == amount) {
+			return debtor;
+		}
+	}
+	return null;
+};
+
 //--------------------------------------------------------------------------------------------------------
 
 var bob = new Person("Bob");
@@ -138,6 +200,7 @@ var jennifer = new Person("Jennifer");
 var tom = new Person("Tom");
 var diane = new Person("Diane");
 var jordan = new Person("Jordan");
+var kevin = new Person("Kevin");
 
 var tree = new Tree();
 tree.addPerson(bob);
@@ -145,6 +208,7 @@ tree.addPerson(jennifer);
 tree.addPerson(tom);
 tree.addPerson(diane);
 tree.addPerson(jordan);
+tree.addPerson(kevin);
 
 console.log("******** Testing addConnection ********");
 
@@ -159,19 +223,22 @@ console.log("******** Testing removeConnection ********");
 tree.removeConnection(bob, jordan);
 tree.listConnections();
 
-console.log("******** Testing simplifyPerson ********");
+console.log("******** Testing simplifyPerson1 ********");
 
 tree.addConnection(bob, jordan, 10);
 tree.simplifyPerson(bob);
 
-console.log("******** Testing simplifyPerson ********");
+console.log("******** Testing simplifyPerson2 ********");
 
 tree.addConnection(bob, jordan, 10);
 tree.removeConnection(bob, jordan);
 tree.simplifyPerson(bob);
 
-console.log("******** Testing simplifyPerson ********");
+console.log("******** Testing simplifyPerson3 ********");
 
-tree.addConnection(bob, jordan, 10);
+tree.addConnection(bob, jordan, 1);
+tree.addConnection(bob, kevin, 3);
+tree.listConnections();
 tree.simplifyPerson(bob);
+tree.listConnections();
 
