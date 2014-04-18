@@ -68,7 +68,28 @@ Tree.prototype.simplifyPerson = function(person) {
 	// At this point, the person can still be simplified
 	console.log("Can still simplify!");
 	
-	//
+	this.simplifyPerfectSubsetSums(person);
+	
+	if (!this.canSimplifyPerson(person)) {
+		console.log("Can't simplify anymore!!");
+		return;
+	}
+	
+	// At this point, the person can still be simplified
+	console.log("Can still simplify!");
+	
+	
+	this.simplifySubsetSums(person);
+	
+	if (!this.canSimplifyPerson(person)) {
+		console.log("Can't simplify anymore!!");
+		return;
+	}
+	
+	// At this point, the person can still be simplified
+	console.log("Can still simplify!");
+
+	
 	
 };
 
@@ -98,6 +119,52 @@ Tree.prototype.simplifyExacts = function(person) {
 			this.removeConnection(exactDebtor, person);
 			this.removeConnection(person, creditor);
 			this.addConnection(exactDebtor, creditor, amount);
+			i -= 1;
+		}
+	}
+};
+
+Tree.prototype.simplifyPerfectSubsetSums = function(person) {
+	var nexts = person.nexts;
+	for (var i = 0; i < nexts.length; i++) {
+		var next = nexts[i];
+		var creditor = next[0];
+		var amount = next[1];
+		
+		var prevSubsets = this.prevSubsets(person);
+		var prevSubsetsSums = this.prevSubsetsSums(prevSubsets);
+	
+		console.log("Subsets: " + prevSubsets);
+		console.log("Subset sums " + prevSubsetsSums);
+				
+		var matchIndex = this.prevSubsetsSumsMatchIndex(prevSubsetsSums, amount);
+		if (matchIndex != -1) {
+			var matchedSubset = prevSubsets[matchIndex];
+			console.log("Match subset found: " + matchedSubset);
+			this.moveAllMatches(matchedSubset, person, creditor);
+			i -= 1;
+		}
+	}
+};
+
+Tree.prototype.simplifySubsetSums = function(person) {
+	var nexts = person.nexts;
+	for (var i = 0; i < nexts.length; i++) {
+		var next = nexts[i];
+		var creditor = next[0];
+		var amount = next[1];
+		
+		var prevSubsets = this.prevSubsets(person);
+		var prevSubsetsSums = this.prevSubsetsSums(prevSubsets);
+	
+		console.log("Subsets: " + prevSubsets);
+		console.log("Subset sums " + prevSubsetsSums);
+				
+		var matchIndex = this.prevSubsetsSumsMatchIndex2(prevSubsetsSums, amount);
+		if (matchIndex != -1) {
+			var matchedSubset = prevSubsets[matchIndex];
+			console.log("Match subset found: " + matchedSubset);
+			return;
 			i -= 1;
 		}
 	}
@@ -134,6 +201,74 @@ Tree.prototype.listNexts = function(debtor) {
 		console.log(debtor.name + " owes $" + amount + " to " + creditor.name);
 	}
 };
+
+// Return an array of all debtor subsets
+Tree.prototype.prevSubsets = function(person) {
+	var prevs = person.prevs;
+	var subsets = [];
+	for (var i = 0; i < prevs.length; i++) {
+		subsets.push([prevs[i]]);
+		var subsetslength = subsets.length;
+		for (var j = 0; j < subsetslength - 1; j++) {
+			var subset = [];
+			for (var k = 0; k < subsets[j].length; k++) {
+				subset.push(subsets[j][k]);
+			}
+			subset.push(prevs[i]);
+			subsets.push(subset);
+		}	
+	}
+	return subsets;
+};
+
+Tree.prototype.prevSubsetsSums = function(subsets) {
+	var sums = [];
+	for (var i = 0; i < subsets.length; i++) {
+		var sum = 0;
+		for (var j = 0; j < subsets[i].length; j++) {
+			sum += subsets[i][j][1];
+		}
+		sums.push(sum);
+	}
+	return sums;
+};
+
+Tree.prototype.prevSubsetsSumsMatchIndex = function(sums, amount) {
+	for (var i = 0; i < sums.length; i++) {
+		var sum = sums[i];
+		if (sum == amount) {
+			return i;
+		}
+	}
+	return -1;
+};
+
+Tree.prototype.prevSubsetsSumsMatchIndex2 = function(sums, amount) {
+	var maxSum = 0;
+	var maxIndex = 0;
+	for (var i = 0; i < sums.length; i++) {
+		var sum = sums[i];
+		if ((sum > maxSum) && (sum < amount)) {
+			maxSum = sum;
+			maxIndex = i;
+		}
+	}
+	if (maxSum != 0) {
+		return maxIndex;
+	}
+	return -1;
+};
+
+Tree.prototype.moveAllMatches = function(matchedSubset, debtor, creditor) {
+	this.removeConnection(debtor, creditor);
+	for (var i = 0; i < matchedSubset.length; i++) {
+		var prev = matchedSubset[i];
+		var prevDebtor = prev[0];
+		var amount = prev[1];
+		this.removeConnection(prevDebtor, debtor);
+		this.addConnection(prevDebtor, creditor, amount);
+	}
+}
 
 //--------------------------------------------------------------------------------------------------------
 
@@ -201,6 +336,9 @@ var tom = new Person("Tom");
 var diane = new Person("Diane");
 var jordan = new Person("Jordan");
 var kevin = new Person("Kevin");
+var mike = new Person("Mike");
+var kate = new Person("Kate");
+var albert = new Person("Albert");
 
 var tree = new Tree();
 tree.addPerson(bob);
@@ -209,36 +347,21 @@ tree.addPerson(tom);
 tree.addPerson(diane);
 tree.addPerson(jordan);
 tree.addPerson(kevin);
-
-console.log("******** Testing addConnection ********");
+tree.addPerson(kate);
+tree.addPerson(mike);
+tree.addPerson(albert);
 
 tree.addConnection(jennifer, bob, 1);
-tree.addConnection(tom, bob, 1);
+tree.addConnection(tom, bob, 2);
 tree.addConnection(diane, bob, 1);
-tree.addConnection(bob, jordan, 10);
-tree.listConnections();
-
-console.log("******** Testing removeConnection ********");
-
-tree.removeConnection(bob, jordan);
-tree.listConnections();
-
-console.log("******** Testing simplifyPerson1 ********");
-
-tree.addConnection(bob, jordan, 10);
-tree.simplifyPerson(bob);
-
-console.log("******** Testing simplifyPerson2 ********");
-
-tree.addConnection(bob, jordan, 10);
-tree.removeConnection(bob, jordan);
-tree.simplifyPerson(bob);
-
-console.log("******** Testing simplifyPerson3 ********");
-
 tree.addConnection(bob, jordan, 1);
 tree.addConnection(bob, kevin, 3);
-tree.listConnections();
+
+tree.addConnection(kate, bob, 5);
+tree.addConnection(bob, mike, 20);
+tree.addConnection(albert, bob, 10)
+
 tree.simplifyPerson(bob);
 tree.listConnections();
+
 
