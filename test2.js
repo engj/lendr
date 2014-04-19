@@ -134,6 +134,7 @@ var a = new Person("A");
 var b = new Person("B");
 var c = new Person("C");
 var d = new Person("D");
+var f = new Person("F");
 
 var tree = new Tree();
 
@@ -141,10 +142,12 @@ tree.addPerson(a);
 tree.addPerson(b);
 tree.addPerson(c);
 tree.addPerson(d);
+tree.addPerson(f);
 
-a.addNext(b, 1);
-d.addNext(b, 1);
-b.addNext(c, 5);
+a.addNext(b, 20);
+d.addNext(b, 5);
+b.addNext(c, 10);
+b.addNext(f, 1);
 
 tree.simplify();
 
