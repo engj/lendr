@@ -1,4 +1,0 @@
-lendr
-=====
-
-simplifies debt circles
